@@ -6,17 +6,44 @@ interface Props {
   variant?: "inline" | "banner" | "sidebar";
 }
 
+type Status = "idle" | "submitting" | "success" | "error";
+
 export default function NewsletterSignup({ variant = "banner" }: Props) {
   const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      setSubmitted(true);
+    if (!email || status === "submitting") return;
+
+    setStatus("submitting");
+    setErrorMessage("");
+
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMessage(data.error || "Something went wrong. Please try again.");
+        setStatus("error");
+        return;
+      }
+
+      setStatus("success");
       setEmail("");
+    } catch {
+      setErrorMessage("Network error. Please try again.");
+      setStatus("error");
     }
   };
+
+  const submitted = status === "success";
+  const submitting = status === "submitting";
 
   if (variant === "sidebar") {
     return (
@@ -31,13 +58,16 @@ export default function NewsletterSignup({ variant = "banner" }: Props) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-2">
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required
-              className="w-full px-4 py-2.5 rounded-lg border text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2"
-              style={{ backgroundColor: '#1a2744', borderColor: '#253553', }} />
-            <button type="submit" className="w-full text-white font-semibold py-2.5 rounded-lg text-sm transition-colors"
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required disabled={submitting}
+              className="w-full px-4 py-2.5 rounded-lg border text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 disabled:opacity-60"
+              style={{ backgroundColor: '#1a2744', borderColor: '#253553' }} />
+            <button type="submit" disabled={submitting} className="w-full text-white font-semibold py-2.5 rounded-lg text-sm transition-colors disabled:opacity-60"
               style={{ backgroundColor: '#c9a84c' }}>
-              Subscribe Free
+              {submitting ? "Subscribing…" : "Subscribe Free"}
             </button>
+            {status === "error" && (
+              <p className="text-xs mt-2" style={{ color: '#ff9a9a' }}>{errorMessage}</p>
+            )}
           </form>
         )}
         <p className="text-gray-500 text-xs mt-3">Join 5,000+ Flint residents. Unsubscribe anytime.</p>
@@ -54,15 +84,20 @@ export default function NewsletterSignup({ variant = "banner" }: Props) {
             <p className="text-sm" style={{ color: '#5a5340' }}>Daily updates on crime, local news &amp; events.</p>
           </div>
           {submitted ? (
-            <span className="font-medium text-sm" style={{ color: '#c9a84c' }}>Signed up!</span>
+            <span className="font-medium text-sm" style={{ color: '#c9a84c' }}>Signed up! Check your inbox.</span>
           ) : (
-            <form onSubmit={handleSubmit} className="flex gap-2 w-full sm:w-auto">
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required
-                className="flex-1 sm:w-56 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2" style={{ }} />
-              <button type="submit" className="text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors whitespace-nowrap"
-                style={{ backgroundColor: '#c9a84c' }}>
-                Subscribe
-              </button>
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <div className="flex gap-2">
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required disabled={submitting}
+                  className="flex-1 sm:w-56 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 disabled:opacity-60" />
+                <button type="submit" disabled={submitting} className="text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors whitespace-nowrap disabled:opacity-60"
+                  style={{ backgroundColor: '#c9a84c' }}>
+                  {submitting ? "…" : "Subscribe"}
+                </button>
+              </div>
+              {status === "error" && (
+                <p className="text-xs" style={{ color: '#b91c1c' }}>{errorMessage}</p>
+              )}
             </form>
           )}
         </div>
@@ -83,14 +118,19 @@ export default function NewsletterSignup({ variant = "banner" }: Props) {
             You&apos;re in! Check your inbox for a welcome email.
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" required
-              className="flex-1 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2" />
-            <button type="submit" className="text-white font-bold px-6 py-3 rounded-lg transition-colors whitespace-nowrap"
-              style={{ backgroundColor: '#c9a84c' }}>
-              Subscribe Free
-            </button>
-          </form>
+          <>
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" required disabled={submitting}
+                className="flex-1 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 disabled:opacity-60" />
+              <button type="submit" disabled={submitting} className="text-white font-bold px-6 py-3 rounded-lg transition-colors whitespace-nowrap disabled:opacity-60"
+                style={{ backgroundColor: '#c9a84c' }}>
+                {submitting ? "Subscribin…" : "Subscribe Free"}
+              </button>
+            </form>
+            {status === "error" && (
+              <p className="text-sm mt-3" style={{ color: '#ffb4b4' }}>{errorMessage}</p>
+            )}
+          </>
         )}
         <p className="text-sm mt-4" style={{ color: '#5a6a85' }}>Free daily newsletter. No spam. Unsubscribe anytime.</p>
       </div>
