@@ -24,7 +24,7 @@ export default function ArticleCard({ article, featured = false }: Props) {
           <p className="text-gray-600 text-sm leading-relaxed mb-4">{article.excerpt}</p>
           <div className="flex items-center justify-between">
             <span className="text-gray-400 text-xs">{timeAgo}</span>
-            <Link href={`/news/${article.category}`} className="text-sm font-semibold" style={{ color: '#c9a84c' }}>
+            <Link href={`/news/${article.category}`} className="text-sm font-semibold hover:opacity-80 transition-opacity" style={{ color: '#c9a84c' }}>
               Read more &rarr;
             </Link>
           </div>
@@ -45,9 +45,7 @@ export default function ArticleCard({ article, featured = false }: Props) {
           {categoryLabels[article.category]}
         </span>
         <h3 className="font-bold text-gray-900 leading-snug text-base">
-          <Link href={`/news/${article.category}`} className="transition-colors" style={{ color: 'inherit' }}
-            onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => e.currentTarget.style.color = '#c9a84c'}
-            onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => e.currentTarget.style.color = 'inherit'}>
+          <Link href={`/news/${article.category}`} className="transition-colors hover:text-yellow-600">
             {article.title}
           </Link>
         </h3>
@@ -55,7 +53,7 @@ export default function ArticleCard({ article, featured = false }: Props) {
       <p className="text-gray-600 text-sm leading-relaxed mb-3">{article.excerpt}</p>
       <div className="flex items-center justify-between text-xs text-gray-400">
         <span>{article.author} &middot; {timeAgo}</span>
-        <Link href={`/news/${article.category}`} className="font-semibold" style={{ color: '#c9a84c' }}>
+        <Link href={`/news/${article.category}`} className="font-semibold hover:opacity-80 transition-opacity" style={{ color: '#c9a84c' }}>
           Read more &rarr;
         </Link>
       </div>
