@@ -33,7 +33,7 @@ export default function NewsletterSignup({ variant = "banner" }: Props) {
           <form onSubmit={handleSubmit} className="space-y-2">
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required
               className="w-full px-4 py-2.5 rounded-lg border text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2"
-              style={{ backgroundColor: '#1a2744', borderColor: '#253553', focusRingColor: '#c9a84c' }} />
+              style={{ backgroundColor: '#1a2744', borderColor: '#253553', }} />
             <button type="submit" className="w-full text-white font-semibold py-2.5 rounded-lg text-sm transition-colors"
               style={{ backgroundColor: '#c9a84c' }}>
               Subscribe Free
@@ -58,7 +58,7 @@ export default function NewsletterSignup({ variant = "banner" }: Props) {
           ) : (
             <form onSubmit={handleSubmit} className="flex gap-2 w-full sm:w-auto">
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required
-                className="flex-1 sm:w-56 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2" style={{ focusRingColor: '#c9a84c' }} />
+                className="flex-1 sm:w-56 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2" style={{ }} />
               <button type="submit" className="text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors whitespace-nowrap"
                 style={{ backgroundColor: '#c9a84c' }}>
                 Subscribe
