@@ -12,11 +12,11 @@ export default function Home() {
 
   return (
     <>
-      {/* Hero / Breaking News */}
-      <section className="bg-gray-900 text-white">
+      {/* Hero */}
+      <section style={{ backgroundColor: '#0f1a2e' }}>
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="flex items-center gap-2 mb-6">
-            <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
+            <span className="text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse" style={{ backgroundColor: '#c9a84c' }}>
               LATEST
             </span>
             <span className="text-gray-400 text-sm">
@@ -31,32 +31,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Main Content Grid */}
+      {/* Main Content */}
       <section className="max-w-7xl mx-auto px-4 py-10">
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* News Feed */}
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-black text-gray-900">Latest News</h2>
-              <Link
-                href="/news"
-                className="text-red-600 hover:text-red-700 text-sm font-semibold"
-              >
-                View all &rarr;
-              </Link>
+              <Link href="/news" className="text-sm font-semibold" style={{ color: '#c9a84c' }}>View all &rarr;</Link>
             </div>
-
             <div className="space-y-4">
               {recentArticles.slice(0, 3).map((article) => (
                 <ArticleCard key={article.id} article={article} />
               ))}
             </div>
-
-            {/* Inline newsletter after 3 articles */}
-            <div className="my-6">
-              <NewsletterSignup variant="inline" />
-            </div>
-
+            <div className="my-6"><NewsletterSignup variant="inline" /></div>
             <div className="space-y-4">
               {recentArticles.slice(3).map((article) => (
                 <ArticleCard key={article.id} article={article} />
@@ -64,23 +52,13 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Sidebar */}
           <aside className="space-y-6">
-            {/* Newsletter */}
             <NewsletterSignup variant="sidebar" />
 
-            {/* Upcoming Events */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-gray-900 text-lg">
-                  Upcoming Events
-                </h3>
-                <Link
-                  href="/events"
-                  className="text-red-600 hover:text-red-700 text-xs font-semibold"
-                >
-                  View all &rarr;
-                </Link>
+                <h3 className="font-bold text-gray-900 text-lg">Upcoming Events</h3>
+                <Link href="/events" className="text-xs font-semibold" style={{ color: '#c9a84c' }}>View all &rarr;</Link>
               </div>
               <div className="space-y-3">
                 {upcomingEvents.map((event) => (
@@ -90,18 +68,13 @@ export default function Home() {
             </div>
 
             {/* Advertise CTA */}
-            <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-xl p-6 text-white">
-              <h3 className="font-bold text-lg mb-2">
-                Put Your Business in the Spotlight
-              </h3>
-              <p className="text-red-100 text-sm mb-4">
-                Reach thousands of Flint residents every day. Featured listings,
-                sponsored posts, and newsletter ads available.
+            <div className="rounded-xl p-6 text-white" style={{ background: 'linear-gradient(135deg, #1a2744, #0f1a2e)' }}>
+              <h3 className="font-bold text-lg mb-2">Put Your Business in the Spotlight</h3>
+              <p className="text-sm mb-4" style={{ color: '#8a9ab5' }}>
+                Reach thousands of Flint residents every day. Featured listings, sponsored posts, and newsletter ads available.
               </p>
-              <Link
-                href="/advertise"
-                className="inline-block bg-white text-red-700 font-bold px-5 py-2.5 rounded-lg text-sm hover:bg-gray-100 transition-colors"
-              >
+              <Link href="/advertise" className="inline-block font-bold px-5 py-2.5 rounded-lg text-sm transition-colors"
+                style={{ backgroundColor: '#c9a84c', color: '#0f1a2e' }}>
                 Advertise With Us
               </Link>
             </div>
@@ -110,45 +83,24 @@ export default function Home() {
             <div className="bg-white rounded-xl border border-gray-200 p-5">
               <h3 className="font-bold text-gray-900 mb-3">Quick Links</h3>
               <ul className="space-y-2">
-                <li>
-                  <Link
-                    href="/submit"
-                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 transition-colors"
-                  >
-                    <span className="text-red-500">&#9654;</span> Submit a News Tip
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/submit"
-                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 transition-colors"
-                  >
-                    <span className="text-red-500">&#9654;</span> Submit an Event
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/business-directory"
-                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 transition-colors"
-                  >
-                    <span className="text-red-500">&#9654;</span> Business Directory
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/news/crime"
-                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 transition-colors"
-                  >
-                    <span className="text-red-500">&#9654;</span> Crime &amp; Safety Reports
-                  </Link>
-                </li>
+                <li><Link href="/submit" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                  <span style={{ color: '#c9a84c' }}>&#9654;</span> Submit a News Tip
+                </Link></li>
+                <li><Link href="/submit" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                  <span style={{ color: '#c9a84c' }}>&#9654;</span> Submit an Event
+                </Link></li>
+                <li><Link href="/business-directory" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                  <span style={{ color: '#c9a84c' }}>&#9654;</span> Business Directory
+                </Link></li>
+                <li><Link href="/news/crime" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                  <span style={{ color: '#c9a84c' }}>&#9654;</span> Crime &amp; Safety Reports
+                </Link></li>
               </ul>
             </div>
           </aside>
         </div>
       </section>
 
-      {/* Full-width newsletter banner */}
       <NewsletterSignup variant="banner" />
     </>
   );
