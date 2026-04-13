@@ -42,7 +42,13 @@ export async function POST(req: NextRequest) {
     const headline = String(form.get("headline") || "").trim();
     const what = String(form.get("what") || "").trim();
     const who = String(form.get("who") || "").trim();
-    const whenText = String(form.get("when") || "").trim();
+    const whenIso = String(form.get("when") || "").trim();
+    const whenFallback = String(form.get("whenText") || "").trim();
+    const whenDisplay = whenIso
+      ? new Date(whenIso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) + (whenFallback ? ` (${whenFallback})` : "")
+      : whenFallback;
+    const whenText = whenDisplay;
+    const whenProvided = !!(whenIso || whenFallback);
     const where = String(form.get("where") || "").trim();
     const why = String(form.get("why") || "").trim();
     const mediaUrl = String(form.get("mediaUrl") || "").trim();
@@ -51,7 +57,7 @@ export async function POST(req: NextRequest) {
     const rights = form.get("rights") === "true";
 
     // Required fields
-    if (!headline || !what || !whenText || !where) {
+    if (!headline || !what || !whenProvided || !where) {
       return NextResponse.json(
         { error: "Please fill in headline, what happened, when, and where." },
         { status: 400 }

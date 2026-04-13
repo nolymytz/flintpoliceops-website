@@ -166,7 +166,8 @@ export default function SubmitPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass} style={labelStyle}>When did it happen? <span style={{ color: '#b91c1c' }}>*</span></label>
-                  <input name="when" type="datetime-local" required disabled={submitting} className={inputClass} />
+                  <input name="when" type="datetime-local" disabled={submitting} className={inputClass} />
+                  <input name="whenText" type="text" disabled={submitting} className={inputClass} placeholder='Or describe &mdash; e.g. around noon yesterday' style={{ marginTop: '0.5rem' }} />
                 </div>
                 <div>
                   <label className={labelClass} style={labelStyle}>Where did it happen? <span style={{ color: '#b91c1c' }}>*</span></label>
