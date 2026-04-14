@@ -18,22 +18,46 @@ const FEED_TIMEOUT_MS = 5000;
 const MAX_ITEMS_PER_FEED = 8;
 const EXCERPT_MAX_CHARS = 180;
 
+// Decode common HTML entities including numeric ones like &#8217;
+function decodeHtmlEntities(raw: string): string {
+  return raw
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&mdash;/g, "\u2014")
+    .replace(/&ndash;/g, "\u2013")
+    .replace(/&lsquo;/g, "\u2018")
+    .replace(/&rsquo;/g, "\u2019")
+    .replace(/&ldquo;/g, "\u201C")
+    .replace(/&rdquo;/g, "\u201D")
+    .replace(/&hellip;/g, "\u2026");
+}
+
 // Strip HTML tags and normalize whitespace. We only show a short excerpt
 // that links out to the original source — no full-body reproduction.
 function cleanExcerpt(raw: string | undefined): string {
   if (!raw) return "";
-  const stripped = raw
+  const stripped = decodeHtmlEntities(raw)
     .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
     .replace(/\s+/g, " ")
     .trim();
   if (stripped.length <= EXCERPT_MAX_CHARS) return stripped;
   return stripped.slice(0, EXCERPT_MAX_CHARS - 1).trimEnd() + "\u2026";
+}
+
+// Clean a title string — strip tags and decode entities
+function cleanTitle(raw: string | undefined): string {
+  if (!raw) return "";
+  return decodeHtmlEntities(raw)
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function formatRelative(ms: number): string {
@@ -70,7 +94,7 @@ export async function fetchAllRegionalItems(): Promise<RegionalItem[]> {
           .slice(0, MAX_ITEMS_PER_FEED)
           .map((item, idx): RegionalItem | null => {
             const link = item.link?.trim();
-            const title = item.title?.trim();
+            const title = cleanTitle(item.title);
             if (!link || !title) return null;
             const publishedAt = item.isoDate
               ? new Date(item.isoDate).getTime()
