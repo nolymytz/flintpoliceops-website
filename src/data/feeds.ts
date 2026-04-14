@@ -43,16 +43,23 @@ export const feedSources: FeedSource[] = [
   {
     id: "abc12",
     name: "ABC12 WJRT",
-    url: "https://www.abc12.com/feed/",
+    url: "https://www.abc12.com/search/?f=rss&t=article&l=50&s=start_time&sd=desc&k%5B%5D=%23topstory",
     county: "Genesee",
     homepage: "https://www.abc12.com",
   },
   {
-    id: "nbc25",
-    name: "NBC25 News",
-    url: "https://nbc25news.com/feed/",
+    id: "genesee-county-view",
+    name: "Genesee County View",
+    url: "https://geneseecountyview.com/feed/",
     county: "Genesee",
-    homepage: "https://nbc25news.com",
+    homepage: "https://geneseecountyview.com",
+  },
+  {
+    id: "mid-michigan-now",
+    name: "Mid-Michigan Now (NBC25 / FOX66)",
+    url: "https://midmichigannow.com/news.rss",
+    county: "Genesee",
+    homepage: "https://midmichigannow.com",
   },
 
   // --- Saginaw ---
@@ -66,7 +73,7 @@ export const feedSources: FeedSource[] = [
   {
     id: "wnem",
     name: "WNEM TV5",
-    url: "https://www.wnem.com/feed/",
+    url: "https://www.wnem.com/arc/outboundfeeds/rss/?outputType=xml",
     county: "Saginaw",
     homepage: "https://www.wnem.com",
   },
@@ -79,22 +86,8 @@ export const feedSources: FeedSource[] = [
     county: "Shiawassee",
     homepage: "https://www.argus-press.com",
   },
-  {
-    id: "independent-shia",
-    name: "The Independent",
-    url: "https://theshiawasseeindependent.com/feed/",
-    county: "Shiawassee",
-    homepage: "https://theshiawasseeindependent.com",
-  },
 
   // --- Lapeer ---
-  {
-    id: "county-press",
-    name: "The County Press",
-    url: "https://www.thecountypress.com/feed/",
-    county: "Lapeer",
-    homepage: "https://www.thecountypress.com",
-  },
   {
     id: "tri-county-times",
     name: "Tri-County Times",
@@ -103,13 +96,13 @@ export const feedSources: FeedSource[] = [
     homepage: "https://tctimes.com",
   },
 
-  // --- Regional / Mid-Michigan ---
+  // --- Regional / Statewide ---
   {
-    id: "michigan-radio",
-    name: "Michigan Radio",
-    url: "https://www.michiganradio.org/rss.xml",
+    id: "mlive-statewide",
+    name: "MLive",
+    url: "https://www.mlive.com/arc/outboundfeeds/rss/?outputType=xml",
     county: "Regional",
-    homepage: "https://www.michiganradio.org",
+    homepage: "https://www.mlive.com",
   },
   {
     id: "bridge-michigan",
@@ -117,4 +110,5 @@ export const feedSources: FeedSource[] = [
     url: "https://www.bridgemi.com/rss.xml",
     county: "Regional",
     homepage: "https://www.bridgemi.com",
-  },];
+  },
+];
