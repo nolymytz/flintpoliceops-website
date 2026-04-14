@@ -4,7 +4,7 @@ import ArticleCard from "@/components/ArticleCard";
 import LivePostCard from "@/components/LivePostCard";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import RegionalFeedStrip from "@/components/RegionalFeedStrip";
-import { fetchPostedArticles, type ScheduledPost } from "@/lib/supabase";
+import { fetchPostedArticles, fetchUpcomingPosts, type ScheduledPost } from "@/lib/supabase";
 
 export const revalidate = 300;
 
@@ -20,7 +20,15 @@ export default async function NewsPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (hasSupabase) {
-    livePosts = await fetchPostedArticles(30);
+    const [fired, upcoming] = await Promise.all([
+      fetchPostedArticles(30),
+      fetchUpcomingPosts(30),
+    ]);
+    const combined = [...fired];
+    for (const p of upcoming) {
+      if (!combined.find((x) => x.id === p.id)) combined.push(p);
+    }
+    livePosts = combined.slice(0, 30);
   }
 
   const useLive = livePosts.length > 0;

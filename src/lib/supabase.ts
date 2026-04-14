@@ -14,16 +14,19 @@ export const supabase =
 
 export interface ScheduledPost {
   id: number;
+  title: string;
   caption: string;
   image_url: string | null;
-  link: string | null;
+  url: string | null;
   post_type: string;
   weather_card_photo_id: string | null;
-  scheduled_at: string;
-  posted: boolean;
-  created_at: string;
+  scheduled_time: string;
+  fired: boolean;
+  fired_at: string | null;
+  queued_at: string;
   source?: string;
-  title?: string;
+  category?: string;
+  alert_id?: string | null;
 }
 
 export interface ActiveEvent {
@@ -48,9 +51,8 @@ export async function fetchPostedArticles(limit = 20): Promise<ScheduledPost[]> 
   const { data, error } = await supabase
     .from("scheduled_posts")
     .select("*")
-    .eq("posted", true)
-    .in("post_type", ["native", "native_photo", "link"])
-    .order("scheduled_at", { ascending: false })
+    .eq("fired", true)
+    .order("scheduled_time", { ascending: false })
     .limit(limit);
 
   if (error) {
@@ -68,8 +70,8 @@ export async function fetchUpcomingPosts(limit = 10): Promise<ScheduledPost[]> {
   const { data, error } = await supabase
     .from("scheduled_posts")
     .select("*")
-    .eq("posted", false)
-    .order("scheduled_at", { ascending: true })
+    .eq("fired", false)
+    .order("scheduled_time", { ascending: true })
     .limit(limit);
 
   if (error) {
@@ -89,7 +91,7 @@ export async function fetchWeatherAlerts(limit = 6): Promise<ScheduledPost[]> {
     .select("*")
     .eq("post_type", "native_photo")
     .not("weather_card_photo_id", "is", null)
-    .order("scheduled_at", { ascending: false })
+    .order("scheduled_time", { ascending: false })
     .limit(limit);
 
   if (error) {
@@ -146,7 +148,8 @@ export function extractExcerpt(caption: string, maxChars = 180): string {
 /**
  * Format a date string for display.
  */
-export function formatPostDate(dateStr: string): string {
+export function formatPostDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
   const d = new Date(dateStr);
   const diffMin = Math.round((Date.now() - d.getTime()) / 60000);
   if (diffMin < 60) return `${diffMin}m ago`;

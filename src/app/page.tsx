@@ -4,7 +4,7 @@ import EventCard from "@/components/EventCard";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import LivePostCard from "@/components/LivePostCard";
 import Active911Widget from "@/components/Active911Widget";
-import { fetchPostedArticles, fetchActiveEvents, type ScheduledPost } from "@/lib/supabase";
+import { fetchPostedArticles, fetchUpcomingPosts, fetchActiveEvents, type ScheduledPost } from "@/lib/supabase";
 import { articles } from "@/data/articles";
 import ArticleCard from "@/components/ArticleCard";
 
@@ -21,10 +21,19 @@ export default async function Home() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (hasSupabase) {
-    [livePosts, activeEvents] = await Promise.all([
+    // Fetch fired posts first; if none exist yet, also include upcoming scheduled posts
+    const [fired, upcoming, events] = await Promise.all([
       fetchPostedArticles(20),
+      fetchUpcomingPosts(20),
       fetchActiveEvents(8),
     ]);
+    // Merge: show fired posts first, then fill with upcoming if needed
+    const combined = [...fired];
+    for (const p of upcoming) {
+      if (!combined.find((x) => x.id === p.id)) combined.push(p);
+    }
+    livePosts = combined.slice(0, 20);
+    activeEvents = events;
   }
 
   const useLive = livePosts.length > 0;

@@ -50,7 +50,7 @@ export default async function WeatherAlertsPage() {
               {alerts.map((alert) => {
                 const title = extractTitle(alert.caption);
                 const excerpt = extractExcerpt(alert.caption, 200);
-                const dateDisplay = formatPostDate(alert.scheduled_at);
+                const dateDisplay = formatPostDate(alert.scheduled_time);
 
                 return (
                   <article

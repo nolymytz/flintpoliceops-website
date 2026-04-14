@@ -33,15 +33,15 @@ function detectCategory(caption: string): { label: string; color: string } {
 export default function LivePostCard({ post, featured = false }: Props) {
   const title = extractTitle(post.caption);
   const excerpt = extractExcerpt(post.caption);
-  const dateDisplay = formatPostDate(post.scheduled_at);
+  const dateDisplay = formatPostDate(post.scheduled_time);
   const { label, color } = detectCategory(post.caption);
   const hasImage = !!post.image_url;
   const isWeatherCard = post.post_type === "native_photo";
 
   // For weather alert cards, link to the weather section
-  // For regular articles with a source link, link out to the original
-  const href = post.link || "/news";
-  const isExternal = !!post.link;
+  // For regular articles with a source url, link out to the original
+  const href = post.url || "/news";
+  const isExternal = !!post.url;
 
   if (featured) {
     return (
