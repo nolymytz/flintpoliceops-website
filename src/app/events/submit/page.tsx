@@ -5,6 +5,7 @@ import Link from "next/link";
 import NewsletterSignup from "@/components/NewsletterSignup";
 
 type Status = "idle" | "parsing" | "submitting" | "success" | "error";
+type ParseMode = "url" | "text";
 
 const CATEGORIES = [
   "Arts & Culture",
@@ -65,7 +66,9 @@ const FIELD_LABELS: Record<keyof FormData, string> = {
 export default function SubmitEventPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [parseMode, setParseMode] = useState<ParseMode>("url");
   const [parseUrl, setParseUrl] = useState("");
+  const [pasteText, setPasteText] = useState("");
   const [parseError, setParseError] = useState("");
   const [parsedFields, setParsedFields] = useState<Set<keyof FormData>>(new Set());
   const [showMissing, setShowMissing] = useState(false);
@@ -75,8 +78,117 @@ export default function SubmitEventPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }, []);
 
+  // ── Client-side text parser ────────────────────────────────────────────────
+  const parseTextLocally = useCallback((raw: string): Partial<FormData> => {
+    const result: Partial<FormData> = {};
+    const lines = raw.split(/\n/).map((l) => l.trim()).filter(Boolean);
+
+    // Event name: first non-empty line that isn't a date/time/URL
+    const nameLine = lines.find((l) =>
+      l.length > 3 && l.length < 120 &&
+      !/^https?:\/\//i.test(l) &&
+      !/^(when|where|date|time|cost|price|admission|tickets?|register|rsvp|join|location|venue|address):/i.test(l) &&
+      !/^\d{1,2}[\/\-]\d{1,2}/.test(l)
+    );
+    if (nameLine) result.event_name = nameLine;
+
+    // Date patterns
+    const MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec";
+    const dateRe = new RegExp(`(${MONTHS})\\s+\\d{1,2}(?:st|nd|rd|th)?,?\\s*(?:20\\d{2})?`, "i");
+    const numDateRe = /\b(\d{1,2})[\/-](\d{1,2})(?:[\/-](20\d{2}|\d{2}))?\b/;
+    const fullText = raw;
+    const dateMatch = fullText.match(dateRe);
+    if (dateMatch) {
+      const d = new Date(dateMatch[0] + (dateMatch[0].match(/20\d{2}/) ? "" : ` ${new Date().getFullYear()}`));
+      if (!isNaN(d.getTime())) result.start_date = d.toISOString().slice(0, 10);
+    } else {
+      const nm = fullText.match(numDateRe);
+      if (nm) {
+        const year = nm[3] ? (nm[3].length === 2 ? `20${nm[3]}` : nm[3]) : new Date().getFullYear().toString();
+        const d = new Date(`${year}-${nm[1].padStart(2,"0")}-${nm[2].padStart(2,"0")}`);
+        if (!isNaN(d.getTime())) result.start_date = d.toISOString().slice(0, 10);
+      }
+    }
+
+    // Time patterns: 7:00 PM, 7pm, 7:30pm, 19:00
+    const timeRe = /\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|AM|PM)\b|\b([01]?\d|2[0-3]):([0-5]\d)\b/;
+    const timeMatch = fullText.match(timeRe);
+    if (timeMatch) {
+      let h = 0, m = 0;
+      if (timeMatch[4] !== undefined) {
+        // 24h format
+        h = parseInt(timeMatch[4]); m = parseInt(timeMatch[5]);
+      } else {
+        h = parseInt(timeMatch[1]); m = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
+        const ampm = timeMatch[3]?.toLowerCase();
+        if (ampm === "pm" && h < 12) h += 12;
+        if (ampm === "am" && h === 12) h = 0;
+      }
+      result.start_time = `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}`;
+    }
+
+    // Cost / admission
+    const costRe = /\b(free|no charge|no cost|\$\d+(?:\.\d{2})?(?:\s*[-–]\s*\$\d+(?:\.\d{2})?)?|donations?\s+(?:welcome|accepted|appreciated))/i;
+    const costMatch = fullText.match(costRe);
+    if (costMatch) result.cost = costMatch[0].charAt(0).toUpperCase() + costMatch[0].slice(1);
+
+    // Venue: look for lines after "where:", "location:", "venue:", or "at [Venue]"
+    const venueLabel = raw.match(/(?:where|location|venue|address):\s*(.+)/i);
+    if (venueLabel) {
+      result.venue = venueLabel[1].trim().split("\n")[0].trim();
+    } else {
+      const atVenue = raw.match(/\bat\s+([A-Z][^\n,]{3,50})/m);
+      if (atVenue) result.venue = atVenue[1].trim();
+    }
+
+    // City: look for Flint/Genesee county city names
+    const cityRe = /\b(Flint|Burton|Grand Blanc|Flushing|Davison|Swartz Creek|Clio|Linden|Montrose|Fenton|Goodrich|Durand|Owosso)\b/i;
+    const cityMatch = fullText.match(cityRe);
+    if (cityMatch) result.city = cityMatch[1];
+    else if (result.venue) result.city = "Flint";
+
+    // Description: use the full text trimmed to 1000 chars, skip the first line if it became the title
+    const descLines = result.event_name
+      ? lines.filter((l) => l !== result.event_name)
+      : lines;
+    const desc = descLines.join(" ").slice(0, 1000);
+    if (desc.length > 20) result.description = desc;
+
+    // URL in text
+    const urlMatch = fullText.match(/https?:\/\/[^\s)>"']+/);
+    if (urlMatch) result.website = urlMatch[0];
+
+    return result;
+  }, []);
+
   // ── URL Parser ──────────────────────────────────────────────────────────────
-  const handleParse = async () => {
+  const applyParsed = useCallback((ev: Partial<FormData>) => {
+    const filled = new Set<keyof FormData>();
+    setForm((prev) => {
+      const next = { ...prev };
+      (Object.keys(ev) as (keyof FormData)[]).forEach((k) => {
+        if (ev[k] && k in EMPTY) {
+          (next as Record<string, string>)[k] = ev[k] as string;
+          filled.add(k);
+        }
+      });
+      return next;
+    });
+    setParsedFields(filled);
+    return filled.size;
+  }, []);
+
+  const handleParseText = useCallback(() => {
+    if (!pasteText.trim()) { setParseError("Please paste some text first."); return; }
+    setParseError("");
+    const ev = parseTextLocally(pasteText);
+    const count = applyParsed(ev);
+    if (count === 0) {
+      setParseError("Couldn\'t extract much from that text. Please fill in the fields below manually.");
+    }
+  }, [pasteText, parseTextLocally, applyParsed]);
+
+  const handleParseUrl = async () => {
     if (!parseUrl.trim()) { setParseError("Please enter a URL first."); return; }
     setParseError("");
     setStatus("parsing");
@@ -92,25 +204,15 @@ export default function SubmitEventPage() {
         setStatus("idle");
         return;
       }
-      const ev = data.event as Partial<FormData>;
-      const filled = new Set<keyof FormData>();
-      setForm((prev) => {
-        const next = { ...prev };
-        (Object.keys(ev) as (keyof FormData)[]).forEach((k) => {
-          if (ev[k] && k in EMPTY) {
-            (next as Record<string, string>)[k] = ev[k] as string;
-            filled.add(k);
-          }
-        });
-        return next;
-      });
-      setParsedFields(filled);
+      applyParsed(data.event as Partial<FormData>);
       setStatus("idle");
     } catch {
       setParseError("Network error. Please fill in the details manually.");
       setStatus("idle");
     }
   };
+
+  const handleParse = parseMode === "url" ? handleParseUrl : handleParseText;
 
   // ── Submit ──────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
@@ -219,40 +321,96 @@ export default function SubmitEventPage() {
       <div className="max-w-2xl mx-auto px-4 py-10">
         <form onSubmit={handleSubmit} className="space-y-6">
 
-          {/* ── URL Parser ── */}
+          {/* ── Auto-fill Parser ── */}
           <div className="rounded-xl p-5 border-2" style={{ backgroundColor: "#f8f5ee", borderColor: "#d4c68a" }}>
             <h2 className="font-bold mb-1" style={{ color: "#0f1a2e" }}>
-              🔗 Have a link? Let us fill in the details
+              ✨ Auto-fill from a link or post text
             </h2>
             <p className="text-sm mb-3" style={{ color: "#666" }}>
-              Paste a Facebook event, Eventbrite, or any event page URL and we&apos;ll try to auto-fill the form below.
+              Save time by letting us pull event details automatically.
             </p>
-            <div className="flex gap-2">
-              <input
-                type="url"
-                value={parseUrl}
-                onChange={(e) => setParseUrl(e.target.value)}
-                placeholder="https://www.facebook.com/events/... or https://eventbrite.com/..."
-                disabled={parsing || submitting}
-                className="flex-1 px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent disabled:opacity-60"
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleParse(); } }}
-              />
+
+            {/* Mode tabs */}
+            <div className="flex gap-1 mb-3 p-1 rounded-lg" style={{ backgroundColor: "#e8dfc8" }}>
               <button
                 type="button"
-                onClick={handleParse}
-                disabled={parsing || submitting || !parseUrl.trim()}
-                className="px-4 py-2.5 rounded-lg text-sm font-bold text-white transition-colors disabled:opacity-50 whitespace-nowrap"
-                style={{ backgroundColor: "#c9a84c" }}
+                onClick={() => { setParseMode("url"); setParseError(""); }}
+                className="flex-1 py-1.5 rounded-md text-sm font-semibold transition-colors"
+                style={parseMode === "url"
+                  ? { backgroundColor: "#fff", color: "#0f1a2e", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }
+                  : { color: "#666" }}
               >
-                {parsing ? "Parsing…" : "Parse Event"}
+                🔗 Paste a URL
+              </button>
+              <button
+                type="button"
+                onClick={() => { setParseMode("text"); setParseError(""); }}
+                className="flex-1 py-1.5 rounded-md text-sm font-semibold transition-colors"
+                style={parseMode === "text"
+                  ? { backgroundColor: "#fff", color: "#0f1a2e", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }
+                  : { color: "#666" }}
+              >
+                📋 Paste post text
               </button>
             </div>
+
+            {parseMode === "url" ? (
+              <>
+                <p className="text-xs mb-2" style={{ color: "#888" }}>
+                  Works with Eventbrite, Sloan/Longway, library sites, and most event calendar pages.
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={parseUrl}
+                    onChange={(e) => setParseUrl(e.target.value)}
+                    placeholder="https://eventbrite.com/... or any event page URL"
+                    disabled={parsing || submitting}
+                    className="flex-1 px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent disabled:opacity-60"
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleParse(); } }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleParse}
+                    disabled={parsing || submitting || !parseUrl.trim()}
+                    className="px-4 py-2.5 rounded-lg text-sm font-bold text-white transition-colors disabled:opacity-50 whitespace-nowrap"
+                    style={{ backgroundColor: "#c9a84c" }}
+                  >
+                    {parsing ? "Parsing…" : "Parse Event"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-xs mb-2" style={{ color: "#888" }}>
+                  Copy the text from a Facebook post, flyer, or any event announcement and paste it below.
+                </p>
+                <textarea
+                  value={pasteText}
+                  onChange={(e) => setPasteText(e.target.value)}
+                  disabled={submitting}
+                  rows={5}
+                  placeholder={"Example:\nFlint Farmers Market Opening Day\nSaturday, May 3rd at 9:00 AM\nAt the Flint Farmers Market, 300 E. Fifth Ave\nFree admission — all are welcome!"}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent disabled:opacity-60 resize-none mb-2"
+                />
+                <button
+                  type="button"
+                  onClick={handleParse}
+                  disabled={submitting || !pasteText.trim()}
+                  className="w-full py-2.5 rounded-lg text-sm font-bold text-white transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: "#c9a84c" }}
+                >
+                  Extract Event Details
+                </button>
+              </>
+            )}
+
             {parseError && (
               <p className="text-sm mt-2" style={{ color: "#b91c1c" }}>{parseError}</p>
             )}
             {parsedFields.size > 0 && !parseError && (
               <p className="text-sm mt-2 font-medium" style={{ color: "#15803d" }}>
-                ✓ Auto-filled {parsedFields.size} field{parsedFields.size !== 1 ? "s" : ""}. Review below and fill in any missing required fields.
+                ✓ Auto-filled {parsedFields.size} field{parsedFields.size !== 1 ? "s" : ""}. Review below and complete any missing required fields.
               </p>
             )}
           </div>
