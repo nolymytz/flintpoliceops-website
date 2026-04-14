@@ -38,10 +38,10 @@ export default function LivePostCard({ post, featured = false }: Props) {
   const hasImage = !!post.image_url;
   const isWeatherCard = post.post_type === "native_photo";
 
-  // For weather alert cards, link to the weather section
-  // For regular articles with a source url, link out to the original
-  const href = post.url || "/news";
-  const isExternal = !!post.url;
+  // All posts link to the Facebook page where the post lives
+  const FACEBOOK_PAGE = "https://www.facebook.com/FlintPoliceOps";
+  const href = FACEBOOK_PAGE;
+  const isExternal = true;
 
   if (featured) {
     return (
