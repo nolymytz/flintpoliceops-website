@@ -4,7 +4,7 @@ import { useState } from "react";
 import NewsletterSignup from "@/components/NewsletterSignup";
 
 const packages = [
-  { name: "Spotlight Post", price: "$49", period: "one-time", description: "A sponsored article that looks like a news story — the most effective way to reach Flint residents.", features: ["Custom written article about your business", "Published in our news feed", "Shared to our 10K+ Facebook audience", "Included in daily email newsletter", "Permanent link on the site"], popular: true },
+  { name: "Spotlight Post", price: "$49", period: "one-time", description: "A sponsored article that looks like a news story — the most effective way to reach Flint residents.", features: ["Custom written article about your business", "Published in our news feed", "Shared to our 160K+ Facebook audience", "Included in daily email newsletter", "Permanent link on the site"], popular: true },
   { name: "Featured Business", price: "$29", period: "/month", description: "Your business featured in our Business Directory with a highlighted listing.", features: ["Top placement in directory", "Business logo + description", "Direct link to your website", "Contact info displayed", "Category page visibility"], popular: false },
   { name: "Newsletter Sponsor", price: "$79", period: "/week", description: "Your business name and message at the top of our daily email newsletter.", features: ["Sponsored by [Your Business] header", "5,000+ daily email subscribers", "7 consecutive days of exposure", "Custom message + link", "Performance report included"], popular: false },
   { name: "Event Feature", price: "$19", period: "one-time", description: "Highlight your event with a featured badge and top placement on our Events page.", features: ["Featured badge on your event", "Top placement on Events page", "Included in weekly events email", "Social media promotion"], popular: false },
@@ -22,7 +22,7 @@ export default function AdvertisePage() {
           <h1 className="text-4xl font-black mb-3">Put Your Business in Front of Flint</h1>
           <p className="max-w-2xl mx-auto text-lg" style={{ color: '#8a9ab5' }}>Reach thousands of engaged Flint residents every day through sponsored content, featured listings, and newsletter sponsorships.</p>
           <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm">
-            <div className="text-center"><div className="text-3xl font-black" style={{ color: '#c9a84c' }}>10K+</div><div className="text-gray-400">Facebook Followers</div></div>
+            <div className="text-center"><div className="text-3xl font-black" style={{ color: '#c9a84c' }}>160K+</div><div className="text-gray-400">Facebook Followers</div></div>
             <div className="text-center"><div className="text-3xl font-black" style={{ color: '#c9a84c' }}>5K+</div><div className="text-gray-400">Email Subscribers</div></div>
             <div className="text-center"><div className="text-3xl font-black" style={{ color: '#c9a84c' }}>50K+</div><div className="text-gray-400">Monthly Page Views</div></div>
           </div>
