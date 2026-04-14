@@ -8,6 +8,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/news", label: "News" },
   { href: "/news/crime", label: "Crime & Safety" },
+  { href: "/news/regional", label: "Around the Region" },
   { href: "/events", label: "Events" },
   { href: "/business-directory", label: "Business Directory" },
   { href: "/advertise", label: "Advertise" },

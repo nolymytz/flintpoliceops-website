@@ -2,6 +2,9 @@ import Link from "next/link";
 import { articles, categoryLabels } from "@/data/articles";
 import ArticleCard from "@/components/ArticleCard";
 import NewsletterSignup from "@/components/NewsletterSignup";
+import RegionalFeedStrip from "@/components/RegionalFeedStrip";
+
+export const revalidate = 900;
 
 export const metadata = {
   title: "News — Flint Police Ops",
@@ -27,6 +30,8 @@ export default function NewsPage() {
           </Link>
         ))}
       </div>
+
+      <RegionalFeedStrip />
 
       <div className="space-y-4">
         {articles.map((article, i) => (
