@@ -1,5 +1,6 @@
 import Parser from "rss-parser";
 import { feedSources, type County } from "@/data/feeds";
+import { fetchGeneseeCountyGovItems } from "@/lib/scrapers/geneseeCountyGov";
 
 export interface RegionalItem {
   id: string;
@@ -61,7 +62,7 @@ export async function fetchAllRegionalItems(): Promise<RegionalItem[]> {
     headers: { "User-Agent": "FlintPoliceOps-Aggregator/1.0 (+https://flintpoliceops.com)" },
   });
 
-  const results = await Promise.all(
+  const rssPromise = Promise.all(
     feedSources.map(async (src) => {
       try {
         const feed = await withTimeout(parser.parseURL(src.url), FEED_TIMEOUT_MS + 1000);
@@ -99,7 +100,8 @@ export async function fetchAllRegionalItems(): Promise<RegionalItem[]> {
     }),
   );
 
-  const all = results.flat();
+  const [rssResults, scraped] = await Promise.all([rssPromise, fetchGeneseeCountyGovItems()]);
+  const all = [...rssResults.flat(), ...scraped];
 
   // De-dupe by link (some outlets syndicate each other).
   const seen = new Set<string>();
