@@ -98,6 +98,13 @@ export const feedSources: FeedSource[] = [
 
   // --- Regional / Statewide ---
   {
+    id: "dave-bondy",
+    name: "Dave Bondy — Keeping it Real",
+    url: "https://davebondy.substack.com/feed",
+    county: "Regional",
+    homepage: "https://substack.com/@rtmp",
+  },
+  {
     id: "mlive-statewide",
     name: "MLive",
     url: "https://www.mlive.com/arc/outboundfeeds/rss/?outputType=xml",
