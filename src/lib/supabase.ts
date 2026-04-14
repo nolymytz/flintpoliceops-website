@@ -27,6 +27,7 @@ export interface ScheduledPost {
   source?: string;
   category?: string;
   alert_id?: string | null;
+  fb_post_url?: string | null;
 }
 
 export interface ActiveEvent {
