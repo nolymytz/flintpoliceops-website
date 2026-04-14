@@ -38,9 +38,9 @@ export default function LivePostCard({ post, featured = false }: Props) {
   const hasImage = !!post.image_url;
   const isWeatherCard = post.post_type === "native_photo";
 
-  // Link to the specific Facebook post if available, otherwise the page
+  // Link priority: specific FB post → original article URL → Facebook page
   const FACEBOOK_PAGE = "https://www.facebook.com/FlintPoliceOps";
-  const href = post.fb_post_url || FACEBOOK_PAGE;
+  const href = post.fb_post_url || post.url || FACEBOOK_PAGE;
   const isExternal = true;
 
   if (featured) {
