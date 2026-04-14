@@ -124,7 +124,7 @@ export default async function EventsPage() {
             Past Events
           </Link>
           <Link
-            href="/submit"
+            href="/events/submit"
             className="inline-flex text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
             style={{ backgroundColor: "#c9a84c" }}
           >
@@ -190,11 +190,11 @@ export default async function EventsPage() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            href="/submit"
-            className="text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors"
-            style={{ backgroundColor: "#c9a84c" }}
-          >
-            Submit Free Event
+href="/events/submit"
+                className="text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors"
+                style={{ backgroundColor: "#c9a84c" }}
+              >
+                Submit Free Event
           </Link>
           <Link
             href="/advertise"
