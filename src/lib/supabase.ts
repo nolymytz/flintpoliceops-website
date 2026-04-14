@@ -121,6 +121,42 @@ export async function fetchActiveEvents(limit = 10): Promise<ActiveEvent[]> {
   return data ?? [];
 }
 
+export interface WeatherAlert {
+  id: number;
+  alert_id: string;
+  event: string;
+  title: string;
+  area_desc: string | null;
+  severity: string | null;
+  onset: string | null;
+  expires: string | null;
+  description: string | null;
+  instruction: string | null;
+  caption: string;
+  card_image_url: string | null;
+  nws_url: string | null;
+  active: boolean;
+  created_at: string;
+}
+
+/**
+ * Fetch recent NWS weather alerts from the dedicated weather_alerts table.
+ */
+export async function fetchNWSAlerts(limit = 12): Promise<WeatherAlert[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("weather_alerts")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("[supabase] fetchNWSAlerts error:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
 export interface CommunityEvent {
   id: number;
   source_id: string;

@@ -1,20 +1,100 @@
 import Link from "next/link";
 import NewsletterSignup from "@/components/NewsletterSignup";
-import { fetchWeatherAlerts, extractTitle, extractExcerpt, formatPostDate } from "@/lib/supabase";
+import { fetchNWSAlerts, type WeatherAlert } from "@/lib/supabase";
 
-export const revalidate = 300;
+export const revalidate = 300; // revalidate every 5 minutes
 
 export const metadata = {
   title: "Weather Alerts — Flint Police Ops",
   description: "Current and recent weather alerts for Flint, Genesee, Lapeer, and Shiawassee counties from the National Weather Service.",
 };
 
-export default async function WeatherAlertsPage() {
-  const hasSupabase =
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SEVERITY_COLORS: Record<string, string> = {
+  Extreme:  "#dc2626",
+  Severe:   "#ea580c",
+  Moderate: "#d97706",
+  Minor:    "#2563eb",
+  Unknown:  "#6b7280",
+};
 
-  const alerts = hasSupabase ? await fetchWeatherAlerts(12) : [];
+function severityColor(severity: string | null): string {
+  return SEVERITY_COLORS[severity ?? "Unknown"] ?? "#6b7280";
+}
+
+function AlertCard({ alert }: { alert: WeatherAlert }) {
+  const color = severityColor(alert.severity);
+  const excerpt = alert.caption
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith("#") && !l.startsWith("📷"))
+    .slice(0, 4)
+    .join(" ")
+    .slice(0, 220);
+
+  return (
+    <article className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+      {/* Card image or fallback */}
+      {alert.card_image_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={alert.card_image_url}
+          alt={alert.title}
+          className="w-full aspect-square object-cover"
+        />
+      ) : (
+        <div
+          className="w-full aspect-square flex items-center justify-center px-6"
+          style={{ background: "linear-gradient(135deg, #0f1a2e, #1a3a6e)" }}
+        >
+          <div className="text-center">
+            <div className="text-5xl mb-3">⚠️</div>
+            <p className="text-white font-bold text-lg leading-tight">{alert.event}</p>
+            {alert.area_desc && (
+              <p className="text-blue-200 text-sm mt-1 leading-snug">{alert.area_desc}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <span
+            className="inline-block px-2 py-0.5 rounded text-xs font-bold text-white"
+            style={{ backgroundColor: color }}
+          >
+            {alert.severity ?? "Weather Alert"}
+          </span>
+          {alert.onset && (
+            <span className="text-xs text-gray-400">Onset: {alert.onset}</span>
+          )}
+        </div>
+        <h3 className="font-bold text-gray-900 text-base leading-snug mb-1">{alert.event}</h3>
+        {alert.area_desc && (
+          <p className="text-xs text-gray-500 mb-2">{alert.area_desc}</p>
+        )}
+        {excerpt && (
+          <p className="text-sm text-gray-600 leading-snug line-clamp-3">{excerpt}</p>
+        )}
+        {alert.expires && (
+          <p className="text-xs text-gray-400 mt-2">Expires: {alert.expires}</p>
+        )}
+        {alert.nws_url && (
+          <a
+            href={alert.nws_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-3 text-xs font-semibold text-blue-600 hover:underline"
+          >
+            View on NWS →
+          </a>
+        )}
+      </div>
+    </article>
+  );
+}
+
+export default async function WeatherAlertsPage() {
+  const alerts = await fetchNWSAlerts(24);
 
   return (
     <div>
@@ -23,7 +103,7 @@ export default async function WeatherAlertsPage() {
         <div className="max-w-7xl mx-auto px-4 py-10 text-center">
           <h1 className="text-3xl font-black mb-2">Weather Alerts</h1>
           <p style={{ color: "#8a9ab5" }} className="max-w-2xl mx-auto">
-            Current and recent NWS weather alerts for Flint, Genesee, Lapeer, and Shiawassee counties.
+            Current and recent NWS weather alerts for Flint, Genesee, Lapeer, Shiawassee, and surrounding Mid-Michigan counties.
             All alerts sourced directly from the National Weather Service.
           </p>
         </div>
@@ -47,49 +127,9 @@ export default async function WeatherAlertsPage() {
               </span>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {alerts.map((alert) => {
-                const title = extractTitle(alert.caption);
-                const excerpt = extractExcerpt(alert.caption, 200);
-                const dateDisplay = formatPostDate(alert.scheduled_time);
-
-                return (
-                  <article
-                    key={alert.id}
-                    className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
-                  >
-                    {alert.image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={alert.image_url}
-                        alt={title}
-                        className="w-full aspect-square object-cover"
-                      />
-                    ) : (
-                      <div
-                        className="w-full aspect-square flex items-center justify-center"
-                        style={{ background: "linear-gradient(135deg, #0f1a2e, #1a3a6e)" }}
-                      >
-                        <div className="text-center px-6">
-                          <div className="text-5xl mb-3">⚠️</div>
-                          <p className="text-white font-bold text-lg leading-tight">{title}</p>
-                        </div>
-                      </div>
-                    )}
-                    <div className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="inline-block px-2 py-0.5 rounded text-xs font-bold text-white" style={{ backgroundColor: "#0369a1" }}>
-                          Weather Alert
-                        </span>
-                        <span className="text-xs text-gray-400">{dateDisplay}</span>
-                      </div>
-                      <h3 className="font-bold text-gray-900 text-base leading-snug mb-2">{title}</h3>
-                      {excerpt && (
-                        <p className="text-sm text-gray-600 leading-snug">{excerpt}</p>
-                      )}
-                    </div>
-                  </article>
-                );
-              })}
+              {alerts.map((alert) => (
+                <AlertCard key={alert.alert_id} alert={alert} />
+              ))}
             </div>
           </>
         )}
