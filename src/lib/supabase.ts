@@ -121,6 +121,63 @@ export async function fetchActiveEvents(limit = 10): Promise<ActiveEvent[]> {
   return data ?? [];
 }
 
+export interface CommunityEvent {
+  id: number;
+  source_id: string;
+  source: string;
+  title: string;
+  description: string | null;
+  venue: string | null;
+  start_date: string | null;
+  start_date_raw: string | null;
+  url: string | null;
+  image_url: string | null;
+  category: string | null;
+  last_seen: string;
+  stale: boolean;
+}
+
+/**
+ * Fetch upcoming community events (start_date >= today, not stale).
+ */
+export async function fetchUpcomingEvents(limit = 50): Promise<CommunityEvent[]> {
+  if (!supabase) return [];
+  const today = new Date().toISOString().split("T")[0];
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("stale", false)
+    .gte("start_date", today)
+    .order("start_date", { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    console.error("[supabase] fetchUpcomingEvents error:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
+/**
+ * Fetch past community events (start_date < today).
+ */
+export async function fetchPastEvents(limit = 50): Promise<CommunityEvent[]> {
+  if (!supabase) return [];
+  const today = new Date().toISOString().split("T")[0];
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .lt("start_date", today)
+    .order("start_date", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("[supabase] fetchPastEvents error:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
 /**
  * Extract a clean title from a post caption.
  * The caption may start with the article title on the first line,
