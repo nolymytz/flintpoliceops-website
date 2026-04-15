@@ -141,6 +141,7 @@ export interface WeatherAlert {
 
 /**
  * Fetch recent NWS weather alerts from the dedicated weather_alerts table.
+ * @deprecated Use fetchRecentNWSAlerts or fetchArchivedNWSAlerts instead.
  */
 export async function fetchNWSAlerts(limit = 12): Promise<WeatherAlert[]> {
   if (!supabase) return [];
@@ -152,6 +153,46 @@ export async function fetchNWSAlerts(limit = 12): Promise<WeatherAlert[]> {
 
   if (error) {
     console.error("[supabase] fetchNWSAlerts error:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
+/**
+ * Fetch NWS weather alerts created within the last 24 hours (active/current feed).
+ */
+export async function fetchRecentNWSAlerts(limit = 50): Promise<WeatherAlert[]> {
+  if (!supabase) return [];
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("weather_alerts")
+    .select("*")
+    .gte("created_at", cutoff)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("[supabase] fetchRecentNWSAlerts error:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
+/**
+ * Fetch NWS weather alerts older than 24 hours (archive page).
+ */
+export async function fetchArchivedNWSAlerts(limit = 50): Promise<WeatherAlert[]> {
+  if (!supabase) return [];
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("weather_alerts")
+    .select("*")
+    .lt("created_at", cutoff)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("[supabase] fetchArchivedNWSAlerts error:", error.message);
     return [];
   }
   return data ?? [];
