@@ -35,7 +35,9 @@ export default function LivePostCard({ post, featured = false }: Props) {
   const excerpt = extractExcerpt(post.caption);
   const dateDisplay = formatPostDate(post.scheduled_time);
   const { label, color } = detectCategory(post.caption);
-  const hasImage = !!post.image_url;
+  const FPO_FALLBACK = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663515934573/BobProbcZsOfrRle.png";
+  const imageToShow = post.image_url || FPO_FALLBACK;
+  const hasImage = true; // Always show an image — FPO fallback if none set
   const isWeatherCard = post.post_type === "native_photo";
 
   // Link priority: specific FB post → original article URL → Facebook page
@@ -49,7 +51,7 @@ export default function LivePostCard({ post, featured = false }: Props) {
         {hasImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={post.image_url!}
+            src={imageToShow}
             alt={title}
             className="w-full h-48 object-cover"
           />
