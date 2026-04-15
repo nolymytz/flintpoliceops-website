@@ -292,6 +292,79 @@ export async function fetchMissingPersons(): Promise<MissingPerson[]> {
   return data ?? [];
 }
 
+// ── Business Directory ──────────────────────────────────────────────────────
+export interface Business {
+  id: number;
+  name: string;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+  phone: string | null;
+  website: string | null;
+  category: string | null;
+  member_url: string | null;
+  membership_level: string | null;
+  source: string | null;
+  active: boolean;
+  status: string | null;
+  created_at: string;
+}
+
+/**
+ * Fetch all active businesses from the directory.
+ * Supports optional search and city filter.
+ */
+export async function fetchBusinesses(opts?: {
+  search?: string;
+  city?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<Business[]> {
+  if (!supabase) return [];
+  let query = supabase
+    .from("businesses")
+    .select("*")
+    .eq("active", true)
+    .order("name", { ascending: true });
+
+  if (opts?.search) {
+    query = query.ilike("name", `%${opts.search}%`);
+  }
+  if (opts?.city) {
+    query = query.ilike("city", `%${opts.city}%`);
+  }
+  if (opts?.limit) {
+    query = query.limit(opts.limit);
+  }
+  if (opts?.offset) {
+    query = query.range(opts.offset, (opts.offset ?? 0) + (opts.limit ?? 50) - 1);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error("[supabase] fetchBusinesses error:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
+/**
+ * Fetch distinct cities from the businesses table for filter dropdown.
+ */
+export async function fetchBusinessCities(): Promise<string[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("city")
+    .eq("active", true)
+    .not("city", "is", null)
+    .order("city", { ascending: true });
+  if (error) return [];
+  const cities = [...new Set((data ?? []).map((r) => r.city).filter(Boolean))] as string[];
+  return cities;
+}
+
 /**
  * Extract a clean title from a post caption.
  * The caption may start with the article title on the first line,
