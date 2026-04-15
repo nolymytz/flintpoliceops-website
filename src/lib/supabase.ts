@@ -214,6 +214,43 @@ export async function fetchPastEvents(limit = 50): Promise<CommunityEvent[]> {
   return data ?? [];
 }
 
+// ── Missing Persons ──────────────────────────────────────────────────────────
+export interface MissingPerson {
+  id: number;
+  case_number: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string | null;
+  age: number | null;
+  missing_city: string | null;
+  missing_county: string | null;
+  missing_state: string;
+  missing_date: string | null;
+  thumbnail_url: string | null;
+  image_url: string | null;
+  has_poster: boolean;
+  case_type: string | null;
+  race: string | null;
+  source: string;
+  ncmec_url: string | null;
+  active: boolean;
+  last_updated: string;
+}
+
+export async function fetchMissingPersons(): Promise<MissingPerson[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("missing_persons")
+    .select("*")
+    .eq("active", true)
+    .order("missing_date", { ascending: false });
+  if (error) {
+    console.error("[supabase] fetchMissingPersons error:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
 /**
  * Extract a clean title from a post caption.
  * The caption may start with the article title on the first line,

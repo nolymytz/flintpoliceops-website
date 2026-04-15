@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/news/regional", label: "Around the Region" },
   { href: "/weather", label: "Weather Alerts" },
   { href: "/events", label: "Events" },
+  { href: "/missing-persons", label: "Missing Persons" },
   { href: "/business-directory", label: "Business Directory" },
   { href: "/advertise", label: "Advertise" },
   { href: "/submit", label: "Submit a Tip" },
