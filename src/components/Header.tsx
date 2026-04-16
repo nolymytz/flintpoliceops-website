@@ -13,6 +13,7 @@ const navLinks = [
   { href: "/events", label: "Events" },
   { href: "/missing-persons", label: "Missing Persons" },
   { href: "/business-directory", label: "Business Directory" },
+  { href: "/garage-sales", label: "Garage & Estate Sales" },
   { href: "/advertise", label: "Advertise" },
   { href: "/submit", label: "Submit a Tip" },
 ];
