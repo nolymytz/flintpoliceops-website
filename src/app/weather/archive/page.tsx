@@ -2,7 +2,7 @@ import Link from "next/link";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import { fetchArchivedNWSAlerts, type WeatherAlert } from "@/lib/supabase";
 
-export const revalidate = 600; // revalidate every 10 minutes
+export const dynamic = "force-dynamic"; // always run fresh — 24h boundary depends on current time
 
 export const metadata = {
   title: "Weather Alert Archive — Flint Police Ops",
