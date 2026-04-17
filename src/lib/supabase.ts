@@ -284,7 +284,7 @@ export async function fetchMissingPersons(): Promise<MissingPerson[]> {
     .from("missing_persons")
     .select("*")
     .eq("active", true)
-    .order("missing_date", { ascending: false });
+    .order("missing_date", { ascending: false, nullsFirst: false });
   if (error) {
     console.error("[supabase] fetchMissingPersons error:", error.message);
     return [];
