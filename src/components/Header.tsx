@@ -4,8 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 
-// Desktop nav — simplified labels, 7 items
+// Desktop nav — simplified labels, 8 items
 const navLinks = [
+  { href: "/", label: "Home" },
   { href: "/news", label: "News" },
   { href: "/weather", label: "Weather Alerts" },
   { href: "/events", label: "Events" },
@@ -76,7 +77,7 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-2 py-2 text-xs font-medium text-gray-300 hover:text-white rounded-lg transition-colors whitespace-nowrap"
+                className="px-2 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg transition-colors whitespace-nowrap"
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1a2744'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
@@ -85,7 +86,7 @@ export default function Header() {
             ))}
             <Link
               href="#newsletter"
-              className="ml-2 inline-flex text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+              className="ml-2 inline-flex text-white text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
               style={{ backgroundColor: '#c9a84c' }}
             >
               Subscribe
