@@ -15,6 +15,7 @@ const navLinks = [
   { href: "/business-directory", label: "Local Business" },
   { href: "/garage-sales", label: "Garage Sales" },
   { href: "/advertise", label: "Contact" },
+  { href: "/submit", label: "Submit a Tip" },
 ];
 
 // Mobile drawer — full list with all sub-pages
