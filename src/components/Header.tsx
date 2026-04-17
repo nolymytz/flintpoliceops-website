@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useState } from "react";
 
 const navLinks = [
-  { href: "/", label: "Home" },
   { href: "/news", label: "News" },
   { href: "/news/crime", label: "Crime & Safety" },
   { href: "/news/regional", label: "Around the Region" },
@@ -60,29 +59,27 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* Desktop nav */}
+          {/* Desktop nav + Subscribe */}
           <nav className="hidden lg:flex items-center gap-0 flex-nowrap overflow-hidden">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-1.5 py-2 text-[11px] font-medium text-gray-300 hover:text-white rounded-lg transition-colors whitespace-nowrap"
+                className="px-2 py-2 text-xs font-medium text-gray-300 hover:text-white rounded-lg transition-colors whitespace-nowrap"
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1a2744'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="#newsletter"
+              className="ml-2 inline-flex text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+              style={{ backgroundColor: '#c9a84c' }}
+            >
+              Subscribe
+            </Link>
           </nav>
-
-          {/* Subscribe CTA */}
-          <Link
-            href="#newsletter"
-            className="hidden sm:inline-flex text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-            style={{ backgroundColor: '#c9a84c' }}
-          >
-            Subscribe
-          </Link>
         </div>
       </header>
 
