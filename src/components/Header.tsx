@@ -4,7 +4,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 
+// Desktop nav — simplified labels, 7 items
 const navLinks = [
+  { href: "/news", label: "News" },
+  { href: "/weather", label: "Weather Alerts" },
+  { href: "/events", label: "Events" },
+  { href: "/missing-persons", label: "Missing Persons" },
+  { href: "/business-directory", label: "Local Business" },
+  { href: "/garage-sales", label: "Garage Sales" },
+  { href: "/advertise", label: "Contact" },
+];
+
+// Mobile drawer — full list with all sub-pages
+const drawerLinks = [
+  { href: "/", label: "Home" },
   { href: "/news", label: "News" },
   { href: "/news/crime", label: "Crime & Safety" },
   { href: "/news/regional", label: "Around the Region" },
@@ -125,7 +138,7 @@ export default function Header() {
 
             {/* Nav links */}
             <div className="flex-1 px-3 py-4 space-y-1">
-              {navLinks.map((link) => (
+              {drawerLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
